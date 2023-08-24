@@ -1,6 +1,6 @@
 # lista_tareas
 
-A new Flutter project.
+Proyecto sobre una forma de organizar tu dia.
 
 ## Getting Started
 
