@@ -8,11 +8,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    const primary = Color(0xff40B7AD);
+    const textcolor = Color(0xff4A4A4A);
+    const backgroundColor = Color(0xFFF5F5F5);
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: primary),
+        scaffoldBackgroundColor: backgroundColor,
+        textTheme: Theme.of(context).textTheme.apply(
+          fontFamily: 'Poppins',
+          bodyColor: textcolor,
+          displayColor: textcolor,
+        ),
+
       ),
       home: SplashPage(),
     );
