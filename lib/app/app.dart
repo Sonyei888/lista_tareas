@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lista_tareas/app/view/home.dart';
 import 'package:lista_tareas/app/view/splash.dart';
+import 'package:lista_tareas/app/view/task_list.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
         ),
 
       ),
-      home: SplashPage(),
+      home: TaskListPage(),
     );
   }
 }
