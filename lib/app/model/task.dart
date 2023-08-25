@@ -4,7 +4,7 @@ class Task {
 
 
   final String title;
-  final bool done;
+  bool done;
 
 
 }
