@@ -25,7 +25,7 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Task List'),
+        title: Center(child: Text('Task List')),
         leading: GestureDetector(
             onTap: (){
               Navigator.of(context).pop();
