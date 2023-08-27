@@ -8,6 +8,8 @@ import '../components/shape.dart';
 class TaskListPage extends StatelessWidget {
   const TaskListPage({Key? key}) : super(key: key);
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +19,7 @@ class TaskListPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showNewTaskModal(context),
-        child: const Icon(Icons.add, size: 50),
+        child: const Icon(Icons.add, size: 51),
       ),
     );
   }
