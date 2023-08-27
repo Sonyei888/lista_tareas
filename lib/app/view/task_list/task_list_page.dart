@@ -24,14 +24,22 @@ class TaskListPage extends StatelessWidget {
 
   void _showNewTaskModal(BuildContext context) {
     showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => const _NewTaskModal());
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _NewTaskModal(
+        onTaskCreated: (Task task) {
+          print(task.title);
+        },
+      ),
+    );
   }
 }
 
 class _NewTaskModal extends StatelessWidget {
-  const _NewTaskModal({super.key});
+  _NewTaskModal({super.key, required this.onTaskCreated});
+
+  final _controler = TextEditingController();
+  final void Function(Task task) onTaskCreated;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +61,7 @@ class _NewTaskModal extends StatelessWidget {
             height: 26,
           ),
           TextField(
+            controller: _controler,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
@@ -66,7 +75,13 @@ class _NewTaskModal extends StatelessWidget {
             height: 26,
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              if (_controler.text.isNotEmpty) {
+                final task = Task(_controler.text);
+                onTaskCreated(task);
+                Navigator.of(context).pop();
+              }
+            },
             child: Text('Guardar'),
           )
         ],
