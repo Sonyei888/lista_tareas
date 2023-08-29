@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,17 +8,35 @@ import '../../model/task.dart';
 import '../components/h1.dart';
 import '../components/shape.dart';
 
-class TaskListPage extends StatelessWidget {
+class TaskListPage extends StatefulWidget {
   const TaskListPage({Key? key}) : super(key: key);
 
+  @override
+  State<TaskListPage> createState() => _TaskListPageState();
+}
 
+class _TaskListPageState extends State<TaskListPage> {
+  final taskList = <Task>[];
 
+  /* @override
+  Future<void> initState() async {
+    final prefs = await SharedPreferences.getInstance();
+    super.initState();
+  }
+*/
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const Column(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Header(), Expanded(child: _TaskList())],
+        children: [
+          Header(),
+          Expanded(
+              child: _TaskList(taskList, OnTaskDoneChange: (task) {
+            task.done = !task.done;
+            setState(() {});
+          })),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showNewTaskModal(context),
@@ -31,7 +51,17 @@ class TaskListPage extends StatelessWidget {
       isScrollControlled: true,
       builder: (_) => _NewTaskModal(
         onTaskCreated: (Task task) {
-          print(task.title);
+          setState(() async {
+            taskList.add(task);
+            final prefs = await SharedPreferences.getInstance();
+            prefs.setStringList(
+                'tasks', taskList.map((e) => jsonEncode(e.toJson())).toList());
+            
+            
+            final taskStrings = prefs.getStringList('tasks');
+            final newTaskList =
+            taskStrings?.map((e) => Task.fromJson(jsonDecode(e))).toList();
+          });
         },
       ),
     );
@@ -46,6 +76,8 @@ class _NewTaskModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 33,
@@ -55,65 +87,56 @@ class _NewTaskModal extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(21)),
         color: Colors.white,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          H1('Nueva Tarea'),
-          const SizedBox(
-            height: 26,
-          ),
-          TextField(
-            controller: _controler,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              hintText: 'Descripcion de la tarea',
+      margin: EdgeInsets.only(bottom: keyboardHeight),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            H1('Nueva Tarea'),
+            const SizedBox(
+              height: 26,
             ),
-          ),
-          const SizedBox(
-            height: 26,
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (_controler.text.isNotEmpty) {
-                final task = Task(_controler.text);
-                onTaskCreated(task);
-                Navigator.of(context).pop();
-              }
-            },
-            child: Text('Guardar'),
-          )
-        ],
+            TextField(
+              controller: _controler,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                hintText: 'Descripcion de la tarea',
+              ),
+            ),
+            const SizedBox(
+              height: 26,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_controler.text.isNotEmpty) {
+                  final task = Task(_controler.text);
+                  onTaskCreated(task);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Guardar'),
+            )
+          ],
+        ),
       ),
     );
   }
 }
 
-class _TaskList extends StatefulWidget {
-  const _TaskList({
+class _TaskList extends StatelessWidget {
+  const _TaskList(
+    this.taskList, {
     super.key,
+    required this.OnTaskDoneChange,
   });
 
-  @override
-  State<_TaskList> createState() => _TaskListState();
-}
-
-class _TaskListState extends State<_TaskList> {
-  final taskList = <Task>[
-    Task('Sacar el perro'),
-    Task('Hacer la compra'),
-    Task('Electiva institucional'),
-  ];
-
-  @override
-  Future<void> initState() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    super.initState();
-  }
+  final List<Task> taskList;
+  final void Function(Task task) OnTaskDoneChange;
 
   @override
   Widget build(BuildContext context) {
@@ -127,10 +150,7 @@ class _TaskListState extends State<_TaskList> {
             child: ListView.separated(
               itemBuilder: (_, index) => TaskItem(
                 taskList[index],
-                onTap: () {
-                  taskList[index].done = !taskList[index].done;
-                  setState(() {});
-                },
+                onTap: () => OnTaskDoneChange(taskList[index]),
               ),
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemCount: taskList.length,
