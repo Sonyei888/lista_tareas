@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:lista_tareas/app/repository/task_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/task.dart';
@@ -16,8 +17,7 @@ class TaskListPage extends StatefulWidget {
 }
 
 class _TaskListPageState extends State<TaskListPage> {
-  final taskList = <Task>[];
-
+  final TaskRepository taskRepository = TaskRepository();
   /* @override
   Future<void> initState() async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,10 +32,26 @@ class _TaskListPageState extends State<TaskListPage> {
         children: [
           Header(),
           Expanded(
-              child: _TaskList(taskList, OnTaskDoneChange: (task) {
-            task.done = !task.done;
-            setState(() {});
-          })),
+              child: FutureBuilder<List<Task>>(
+                future: taskRepository.getTasks(),
+                builder: (context, snapshot) {
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  if(!snapshot.hasData || snapshot.data!.isEmpty){
+                    return const Center(
+                      child: Text('No hay tareas'),
+                    );
+                  }
+                  return _TaskList(snapshot.data!, OnTaskDoneChange: (task) {
+                    task.done = !task.done;
+                    taskRepository.saveTasks(snapshot.data!);
+                    setState(() {});
+          });
+                },
+              )),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -51,16 +67,9 @@ class _TaskListPageState extends State<TaskListPage> {
       isScrollControlled: true,
       builder: (_) => _NewTaskModal(
         onTaskCreated: (Task task) {
-          setState(() async {
-            taskList.add(task);
-            final prefs = await SharedPreferences.getInstance();
-            prefs.setStringList(
-                'tasks', taskList.map((e) => jsonEncode(e.toJson())).toList());
-            
-            
-            final taskStrings = prefs.getStringList('tasks');
-            final newTaskList =
-            taskStrings?.map((e) => Task.fromJson(jsonDecode(e))).toList();
+          taskRepository.addTask(task);
+          setState(() {
+
           });
         },
       ),
