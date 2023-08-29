@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/task.dart';
 import '../components/h1.dart';
@@ -107,6 +108,12 @@ class _TaskListState extends State<_TaskList> {
     Task('Hacer la compra'),
     Task('Electiva institucional'),
   ];
+
+  @override
+  Future<void> initState() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
