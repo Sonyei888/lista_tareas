@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lista_tareas/app/view/home/home_psge.dart';
 import 'package:lista_tareas/app/view/home/inherited_widgets.dart';
+import 'package:lista_tareas/app/view/home/state_dif.dart';
 import 'package:lista_tareas/app/view/splash/splash_page.dart';
 import 'package:lista_tareas/app/view/task_list/task_list_page.dart';
 
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        home: SplashPage(),
+        home: StatePage(),
       ),
     );
   }
