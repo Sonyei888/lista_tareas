@@ -3,77 +3,46 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lista_tareas/app/repository/task_repository.dart';
+import 'package:lista_tareas/app/view/task_list/task_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/task.dart';
 import '../components/h1.dart';
 import '../components/shape.dart';
+import 'package:provider/provider.dart';
 
-class TaskListPage extends StatefulWidget {
+class TaskListPage extends StatelessWidget {
   const TaskListPage({Key? key}) : super(key: key);
 
-  @override
-  State<TaskListPage> createState() => _TaskListPageState();
-}
 
-class _TaskListPageState extends State<TaskListPage> {
-  final TaskRepository taskRepository = TaskRepository();
-  /* @override
-  Future<void> initState() async {
-    final prefs = await SharedPreferences.getInstance();
-    super.initState();
-  }
-*/
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Header(),
-          Expanded(
-              child: FutureBuilder<List<Task>>(
-                future: taskRepository.getTasks(),
-                builder: (context, snapshot) {
-                  if(snapshot.connectionState == ConnectionState.waiting){
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  if(!snapshot.hasData || snapshot.data!.isEmpty){
-                    return const Center(
-                      child: Text('No hay tareas'),
-                    );
-                  }
-                  return _TaskList(snapshot.data!, OnTaskDoneChange: (task) {
-                    task.done = !task.done;
-                    taskRepository.saveTasks(snapshot.data!);
-                    setState(() {});
-          });
-                },
-              )),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showNewTaskModal(context),
-        child: const Icon(Icons.add, size: 51),
+    return ChangeNotifierProvider(
+      create: (_) => TaskProvider()..fetchTasks(),
+      child: Scaffold(
+        body: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Header(),
+            Expanded(child: _TaskList()),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showNewTaskModal(context),
+          child: const Icon(Icons.add, size: 51),
+        ),
       ),
     );
   }
 
   void _showNewTaskModal(BuildContext context) {
     showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => _NewTaskModal(
-        onTaskCreated: (Task task) {
-          taskRepository.addTask(task);
-          setState(() {
-
-          });
-        },
-      ),
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => _NewTaskModal(onTaskCreated: (Task task) {},
+    ),
     );
+
   }
 }
 
@@ -85,7 +54,10 @@ class _NewTaskModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final keyboardHeight = MediaQuery
+        .of(context)
+        .viewInsets
+        .bottom;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -138,14 +110,10 @@ class _NewTaskModal extends StatelessWidget {
 }
 
 class _TaskList extends StatelessWidget {
-  const _TaskList(
-    this.taskList, {
+  const _TaskList({
     super.key,
-    required this.OnTaskDoneChange,
   });
 
-  final List<Task> taskList;
-  final void Function(Task task) OnTaskDoneChange;
 
   @override
   Widget build(BuildContext context) {
@@ -156,13 +124,23 @@ class _TaskList extends StatelessWidget {
         children: [
           const H1('Tareas'),
           Expanded(
-            child: ListView.separated(
-              itemBuilder: (_, index) => TaskItem(
-                taskList[index],
-                onTap: () => OnTaskDoneChange(taskList[index]),
-              ),
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemCount: taskList.length,
+            child: Consumer<TaskProvider>(
+              builder: (_, provider, __){
+                if(provider.taskList.isEmpty) {
+                  return const Center(
+                    child: Text('No hay tareas'),
+                  );
+                }
+                return ListView.separated(
+                  itemBuilder: (_, index) =>
+                      TaskItem(
+                        provider.taskList[index],
+                        onTap: () => provider.OnTaskDoneChange(provider.taskList[index]),
+                      ),
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemCount: provider.taskList.length,
+                );
+              }
             ),
           ),
         ],
@@ -170,6 +148,8 @@ class _TaskList extends StatelessWidget {
     );
   }
 }
+
+
 
 class Header extends StatelessWidget {
   const Header({
@@ -180,7 +160,10 @@ class Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: Theme.of(context).colorScheme.primary,
+      color: Theme
+          .of(context)
+          .colorScheme
+          .primary,
       child: Stack(
         alignment: Alignment.topCenter,
         children: [
@@ -226,7 +209,10 @@ class TaskItem extends StatelessWidget {
                 task.done
                     ? Icons.check_box_rounded
                     : Icons.check_box_outline_blank,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme
+                    .of(context)
+                    .colorScheme
+                    .primary,
               ),
               const SizedBox(width: 10),
               Text(task.title),
