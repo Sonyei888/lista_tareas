@@ -42,19 +42,22 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.0
   provider: ^6.0.3
+  flutter_launcher_icons: ^0.13.1
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
 
-# The following section is specific to Flutter packages.
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/launcher/shape.png"
+
+
+
 flutter:
 
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
+
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
+
   assets:
      - assets/
 
